@@ -1,2 +1,2 @@
 import streamlit as st
-st.title('김지효 streamlit app')
+st.title('d.i.s.c.o')
