@@ -1,7 +1,6 @@
 import numpy as np
 from PIL import Image, ImageOps
 import streamlit as st
-from sklearn.cluster import KMeans
 
 # =========================
 # Pillow LANCZOS 호환 처리
@@ -19,26 +18,29 @@ def to_numpy(img: Image.Image) -> np.ndarray:
         img = img.convert("RGB")
     return np.array(img)
 
-def resize_for_analysis(img: Image.Image, max_side: int = 512) -> Image.Image:
+def resize_for_analysis(img: Image.Image, max_side: int = 256) -> Image.Image:
     w, h = img.size
     scale = min(max_side / max(w, h), 1.0)
     if scale < 1.0:
         return img.resize((int(w * scale), int(h * scale)), RESAMPLE)
     return img
 
-def get_dominant_colors(img: Image.Image, k: int = 5):
-    """대표 색상 K개 뽑기"""
-    small = resize_for_analysis(img, 256)
-    arr = to_numpy(small).reshape(-1, 3).astype(np.float32)
-
-    if arr.shape[0] > 50000:  # 속도 위해 샘플링
-        idx = np.random.choice(arr.shape[0], 50000, replace=False)
-        arr = arr[idx]
-
-    km = KMeans(n_clusters=k, n_init=10, random_state=42)
-    km.fit(arr)
-    centers = np.clip(km.cluster_centers_.astype(int), 0, 255)
-    return [tuple(map(int, c)) for c in centers]
+def get_simple_palette(img: Image.Image, k: int = 5):
+    """
+    sklearn 없이 대표 색상 추출하기
+    - 이미지를 줄이고
+    - 모든 픽셀을 모아서
+    - 가장 많이 나온 색상 순으로 k개 뽑음
+    """
+    small = resize_for_analysis(img, 128)
+    arr = to_numpy(small).reshape(-1, 3)
+    # 16단계로 색상 압축 (속도 ↑, 중복 ↓)
+    arr = (arr // 16) * 16
+    # 색상 빈도 세기
+    uniq, counts = np.unique(arr, axis=0, return_counts=True)
+    idx = np.argsort(-counts)[:k]
+    colors = [tuple(map(int, uniq[i])) for i in idx]
+    return colors
 
 def rgb_to_hex(rgb):
     return '#%02x%02x%02x' % rgb
@@ -94,7 +96,7 @@ def main():
     st.image(img_preview, caption="업로드한 이미지", use_column_width=True)
 
     # 대표 색상 뽑기
-    colors = get_dominant_colors(img_preview, k=k_colors)
+    colors = get_simple_palette(img_preview, k=k_colors)
     st.subheader("🎨 대표 색상 팔레트")
     color_swatches(colors)
 
@@ -109,6 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
 
