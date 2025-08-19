@@ -109,9 +109,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-streamlit>=1.35.0
-Pillow>=9.0.0
-numpy>=1.23.0
-scikit-learn>=1.2.0
+
 
 
