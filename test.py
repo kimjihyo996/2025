@@ -113,18 +113,5 @@ streamlit>=1.35.0
 Pillow>=9.0.0
 numpy>=1.23.0
 scikit-learn>=1.2.0
-# 👗 AI Fashion Coordinator (Streamlit)
 
-학교 과제 시연용 패션 코디네이터 앱입니다.  
-얼굴 사진을 업로드하면 대표 색상을 추출하고, 선택한 스타일에 맞는 브랜드와 코디 아이디어를 추천합니다.
-
-## 기능
-- 얼굴 사진 업로드
-- KMeans로 대표 색상 팔레트 추출
-- 스타일 선택 → 브랜드/코디 추천
-
-## 실행 방법
-```bash
-pip install -r requirements.txt
-streamlit run app.py
 
